@@ -122,4 +122,32 @@ describe('Jetton', () => {
         console.log("receipt jetton balance:", receiptJettonBalance);
         expect(receiptJettonBalance).toBe(toNano(sentAmount));
     });
+
+    it('should burn jetton', async () => {
+        const totalAmount = 1000;
+        const owner = await blockchain.treasury('deployer');
+        await jettonMinter.sendMint(owner.getSender(), {
+            value: toNano('0.05'),
+            to: owner.address,
+            amount: toNano(totalAmount),
+        });
+        const afterData = await jettonMinter.getJettonData();
+        expect(afterData.totalSupply).toBe(toNano(totalAmount));
+
+        let burnAmount = 100;
+        let burnResult = await jettonWallet.sendBurn(owner.getSender(), {
+            value: toNano('0.05'),
+            from: owner.address,
+            amount: toNano(burnAmount)
+        })
+        expect(burnResult.transactions).toHaveTransaction({
+            from: owner.address,
+            to: jettonWallet.address,
+            success: true,
+        });
+
+        const burnJettonBalance = await jettonWallet.getBalance();
+        console.log("after burn, owner jetton balance:", burnJettonBalance);
+        expect(burnJettonBalance).toBe(toNano(totalAmount - burnAmount));
+    });
 });

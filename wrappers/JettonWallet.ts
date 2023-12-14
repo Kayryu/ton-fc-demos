@@ -35,8 +35,19 @@ export function transfer(to: Address, from: Address, jettonAmount: bigint, query
     }
 }
 
+export function burn(jettonAmount: bigint, response_address: Address, queryID?: number, forwardPayload?: Cell) {
+    let cell = beginCell()
+    .storeUint(Opcodes.burn, 32)
+    .storeUint(queryID ?? 0, 64)
+    .storeCoins(jettonAmount)
+    .storeAddress(response_address)
+    .endCell();
+    return cell;
+}
+
 export const Opcodes = {
     transfer: 0xf8a7ea5,
+    burn: 0x595f07bc,
 };
 
 export class JettonWallet implements Contract {
@@ -76,6 +87,23 @@ export class JettonWallet implements Contract {
             value: opts.value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: transfer(opts.to, opts.from, opts.amount, opts.queryID, opts.forwardPayload)
+        });
+    }
+
+    async sendBurn(
+        provider: ContractProvider,
+        via: Sender,
+        opts: {
+            value: bigint;
+            from: Address;
+            amount: bigint;
+            queryID?: number;
+        }
+    ) {
+        await provider.internal(via, {
+            value: opts.value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: burn(opts.amount, opts.from, opts.queryID)
         });
     }
 
