@@ -35,7 +35,7 @@ export function transfer(to: Address, from: Address, jettonAmount: bigint, query
     }
 }
 
-export function burn(jettonAmount: bigint, response_address: Address, queryID?: number, forwardPayload?: Cell) {
+export function burn(jettonAmount: bigint, response_address: Address, queryID?: number) {
     let cell = beginCell()
     .storeUint(Opcodes.burn, 32)
     .storeUint(queryID ?? 0, 64)
